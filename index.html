@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
-      href="shower/themes/ribbon/styles/styles.css"
+      href="node_modules/@shower/ribbon/styles/styles.css"
     />
     <style>
       .shower {
@@ -62,11 +62,11 @@
     <section class="slide" id="immutable">
       <style>
         #immutable h2 {
-          margin: 70px 0 0;
+          margin: 25% 0 0;
           color: white;
         }
       </style>
-      <h2 align="center">Иммутабельная инфраструктура!</h2>
+      <h2 class="centered">Иммутабельная инфраструктура!</h2>
       <img src="pictures/containers.jpeg" class="cover h" />
     </section>
 
@@ -108,6 +108,12 @@
     </section>
 
     <section class="slide">
+      <style></style>
+      <h2>Profit?</h2>
+      <p>Можем быть уверены в том что всё будет хорошо, что бы не случилось</p>
+    </section>
+
+    <section class="slide">
       <style>
         .commits {
           margin: 0 50px 50px;
@@ -126,12 +132,6 @@
     </section>
     <section class="slide">
     <h2 class="centered">Как нам настроить наши машины?</h2>
-    </section>
-
-    <section class="slide">
-      <style></style>
-      <h2>Profit?</h2>
-      <p>Можем быть уверены в том что всё будет хорошо, что бы не случилось</p>
     </section>
 
     <section class="slide" id="bash-one">
@@ -165,8 +165,19 @@
           margin-top: -25px;
           font-size: 8px;
         }
+
+        #bash-two .double {
+          margin: 50px 0 0;
+          display: flex;
+          {{/* justify-content: center; */}}
+        }
+
+        #bash-two .double > pre {
+          margin-right: 40px;
+        }
       </style>
-      <h3>Какие-то не оч красивые..</h3>
+      <h2>Как-то не оч красиво..</h2>
+      <div class="double">
       <pre class="code">
             <code>while <mark>[[ $# -gt 1 ]]</mark>; do</code>
             <code>  arg="$1"</code>
@@ -179,6 +190,8 @@
             <code>        reg=$2</code>
             <code>        shift</code>
             <code>    ;;</code>
+            </pre>
+            <pre class="code">
             <code>    --out)</code>
             <code>        out=$2</code>
             <code>        shift</code>
@@ -189,10 +202,11 @@
             <code>    *)</code>
             <code>        shift</code>
             <code>    ;;</code>
-            <code>  <mark class="important">esac</mark></code>
+            <code>  <mark>esac</mark></code>
             <code>shift</code>
             <code>done</code>
         </pre>
+        </div>
     </section>
 
     <section class="slide" id="cms">
@@ -374,7 +388,7 @@
 
     <section class="slide" id="pushpull">
       <h2>Push and Pull модели</h2>
-      <p class="next">Не, не гит:)</p>
+      <p class="next">Не совсем про гит :)</p>
       <p class="next">Но очень похоже</p>
     </section>
 
@@ -708,15 +722,19 @@
         <p class="next"><strong>Profit!</strong></p>
     </section>
 
+    <section class="slide" id="steps-to-reproduce">
+    <h2 class="centered">Кейсы использования</h2>
+    </section>
+
     <section class="slide" id="standart-examples">
-      <h2>Стандартный пример использования</h2>
+      <h2>Стандартный кейс использования</h2>
       <p>Поднимаем инфраструктуру в облаке</p>
       <p>Управляем серверами централизовано</p>
       <p>Имеем типовое и предсказуемое поведение машин</p>
     </section>
 
     <section class="slide" id="non-standart-examples">
-      <h2><strong>НЕ</strong>Стандартный пример использования</h2>
+      <h2><strong>НЕ</strong>Стандартный кейс использования</h2>
       <p>Конфигурируем виртуальные машины для ботов</p>
       <p>Разворачиваем машины с помощью terraform</p>
       <p>Проводим нагрузочное тестирование</p>

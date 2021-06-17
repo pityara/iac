@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>
+      Строим иммутабельную и воспроизводимую инфраструктуру используя подход IaC
+    </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="node_modules/@shower/ribbon/styles/styles.css"
+    />
+    <style>
+      .shower {
+        --slide-ratio: calc(16 / 9);
+      }
+    </style>
+  </head>
+  <body class="shower list">
+    <header class="caption">
+      <h1>
+        Строим иммутабельную и воспроизводимую инфраструктуру используя подход
+        IaC
+      </h1>
+      <p>Никитин Егор. Fora Soft</p>
+    </header>
+
+    <section class="slide" id="cover">
+      <style>
+        .logo {
+          width: 200px;
+          margin-top: -25px;
+        }
+        #cover h2 {
+          margin: 30px 0 0;
+          text-align: center;
+          font-size: 70px;
+        }
+      </style>
+      <h2>
+        Строим иммутабельную и воспроизводимую инфраструктуру используя подход
+        IaC
+      </h2>
+      <figure class="place bottom">
+        <figcaption align="center">2021</figcaption>
+        <img src="pictures/fora_soft_logo.png" class="logo" />
+      </figure>
+    </section>
+
+    <section class="slide">
+      <style></style>
+      <h2>Иммутабельная?</h2>
+      <pre class="next">
+            <code>const { Map } = require('immutable');</code>
+            <code>const map1 = Map({ a: 1, b: 2, c: 3 });</code>
+            <code>const map2 = Map({ a: 1, b: 2, c: 3 });</code>
+            <code>map1.equals(map2); // true</code>
+            <code>map1 === map2; // false</code>
+        </pre>
+    </section>
+
+    <section class="slide" id="immutable">
+      <style>
+        #immutable h2 {
+          margin: 70px 0 0;
+          color: white;
+        }
+      </style>
+      <h2 align="center">Иммутабельная инфраструктура!</h2>
+      <img src="pictures/containers.jpeg" class="cover h" />
+    </section>
+
+    <section class="slide" id="immutable">
+      <style>
+        #immutable ul {
+          margin-top: -25px;
+        }
+      </style>
+      <h3>Pros</h3>
+      <ul>
+        <li class="next">Неизменяемость</li>
+        <li class="next">Независимость</li>
+        <li class="next">Низкий аптайм(в случае если мы постоянно обновляемся)</li>
+        <li class="next">Scalability</li>
+        <li class="next">Шаблоны</li>
+        <li class="next">etc...</li>
+      </ul>
+    </section>
+
+    <section class="slide" id="immutable">
+      <style>
+        .duration {
+          margin-right: 100px;
+          width: 300px;
+        }
+      </style>
+      <h3>Cons</h3>
+      <ul>
+        <li class="next">Сложность</li>
+        <li class="next">Устаревание</li>
+        <li class="next">Даунтаймы при обновлении</li>
+        <li class="next">Апдейты конкретных инстансев</li>
+        <li class="next">
+          Длительность...
+          <img src="pictures/duration_long.png" class="duration place right" />
+        </li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <style>
+        .commits {
+          margin: 0 50px 50px;
+          width: 400px;
+        }
+      </style>
+      <h2>Воспроизводимая?</h2>
+      <ul>
+        <li class="next">Уверены в том что мы прийдём туда, куда нужно</li>
+        <li class="next">
+          Можем остановится на любой точке нашей записи...
+          <img src="pictures/commits.jpeg" class="commits place right bottom" />
+        </li>
+        <li class="next">... и точно получим рабочее состояние</li>
+      </ul>
+    </section>
+    <section class="slide">
+    <h2 class="centered">Как нам настроить наши машины?</h2>
+    </section>
+
+    <section class="slide">
+      <style></style>
+      <h2>Profit?</h2>
+      <p>Можем быть уверены в том что всё будет хорошо, что бы не случилось</p>
+    </section>
+
+    <section class="slide" id="bash-one">
+      <style>
+        #bash-one .code {
+          font-size: 10px;
+        }
+      </style>
+      <h2>Напишем bash-скрипты?</h2>
+      <pre class="code next">
+        <code>#!/bin/bash</code>
+        <code>logged_on=$(who | grep -i -m 1 $1 | awk '{print $1}')</code>
+        <code>if [ -z $logged_on ]</code>
+        <code>then</code>
+        <code>echo "$1 is not logged on."</code>
+        <code>echo "Exit"</code>
+        <code>exit</code>
+        <code>fi</code>
+        <code>allowed=$(who -T | grep -i -m 1 $1 | awk '{print $2}')</code>
+        <code>if [ $allowed != "+" ]</code>
+        <code>then</code>
+        <code>echo "$1 does not allowing messaging."</code>
+        <code>echo "Exit"</code>
+        <code>exit</code>
+        <code>fi</code>
+      </pre>
+    </section>
+    <section class="slide" id="bash-two">
+      <style>
+        #bash-two .code {
+          margin-top: -25px;
+          font-size: 8px;
+        }
+      </style>
+      <h3>Какие-то не оч красивые..</h3>
+      <pre class="code">
+            <code>while <mark>[[ $# -gt 1 ]]</mark>; do</code>
+            <code>  arg="$1"</code>
+            <code>  case $arg in</code>
+            <code>    --bam)</code>
+            <code>        bam=$2</code>
+            <code>        shift</code>
+            <code>    ;;</code>
+            <code>    --reg)</code>
+            <code>        reg=$2</code>
+            <code>        shift</code>
+            <code>    ;;</code>
+            <code>    --out)</code>
+            <code>        out=$2</code>
+            <code>        shift</code>
+            <code>    ;;</code>
+            <code>    --help)</code>
+            <code>        helpmenu</code>
+            <code>    ;;</code>
+            <code>    *)</code>
+            <code>        shift</code>
+            <code>    ;;</code>
+            <code>  <mark class="important">esac</mark></code>
+            <code>shift</code>
+            <code>done</code>
+        </pre>
+    </section>
+
+    <section class="slide" id="cms">
+      <style>
+        #bash-two .code {
+          margin-top: -25px;
+          font-size: 8px;
+        }
+      </style>
+      <h2>Какие еще варианты?</h2>
+      <p class="next">CMS!</p>
+      <p class="next"><s>Content</s> Configuration Management Systems</p>
+    </section>
+
+    <section class="slide" id="cms-logos">
+      <img src="pictures/cmss.png" class="cover h" />
+    </section>
+
+    <section class="slide" id="timeline">
+      <img src="pictures/timeline.png" class="cover h" />
+    </section>
+
+    <section class="slide" id="other-cms">
+      <h2>И многие другие</h2>
+      <ul>
+        <li>Salt Stack</li>
+        <li>Otter</li>
+        <li>etc...</li>
+      </ul>
+    </section>
+
+    <section class="slide" id="cmsdiff">
+      <h2>Чем же они отличаются?</h2>
+    </section>
+    <section class="slide" id="cmsdiff-table">
+      <style>
+        #cmsdiff-table {
+          font-size: 9px;
+        }
+      </style>
+      <table>
+        <tbody>
+          <tr>
+            <td></td>
+            <td><strong>Puppet 3.0</strong><br /></td>
+            <td><strong>Chef 11.4</strong><br /></td>
+            <td><strong>Ansible 1.3</strong><br /></td>
+            <td><strong>Salt 0.17</strong><br /></td>
+          </tr>
+          <tr>
+            <td><strong>За</strong><br /></td>
+            <td>
+              <ul>
+                <li>
+                  Модули могут быть написаны на ruby, или на более простом,
+                  производном от ruby языке
+                </li>
+                <li>Команды Push позволяют применять изменения немедленно</li>
+                <li>
+                  Веб-интерфейс поддерживает отчеты, инвентаризацию и управление
+                  узлами в реальном времени
+                </li>
+                <li>
+                  Детализированные отчеты о работе агентов и конфигурации узлов
+                </li>
+              </ul>
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>«Поваренные книги» и рецепты используют всю мощь ruby</li>
+                <li>
+                  Централизованные, основанные на JSON массивы данных позволяют
+                  скриптам заполнять переменные во время работы
+                </li>
+                <li>
+                  Веб-интерфейс позволяет вести поиск и учет узлов,
+                  просматривать их активность, применять «поваренные книги» и
+                  роли
+                </li>
+              </ul>
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>Модули могут быть написаны почти на любом языке</li>
+                <li>Не требуются агенты на управляемых узлах</li>
+                <li>
+                  Веб-интерфейс позволяет настраивать пользователей, команды и
+                  оборудование, применять сценарии
+                </li>
+                <li>Очень просто настраивается и запускается</li>
+              </ul>
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>
+                  Конфигурационные файлы могут быть простыми YAML-шаблонами или
+                  скриптами на pyhton и PyDSL
+                </li>
+                <li>
+                  Может связываться с клиентами через SSH или с помощью локально
+                  установленных агентов
+                </li>
+                <li>
+                  Веб-интерфейс позволяет просматривать запущенные задачи,
+                  статус подчиненных узлов и позволяет выполнять комнады на
+                  клиентах
+                </li>
+                <li>Крайне хорошо масштабируется</li>
+              </ul>
+              <br />
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Против</strong><br /></td>
+            <td>
+              <ul>
+                <li>Требуется изучение встроенного языка или ruby</li>
+                <li>Процессу установки недостает отчетов об ошибках</li>
+              </ul>
+              <br />
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>Требуется знание ruby</li>
+                <li>В данный момент недостает функциональных команд push</li>
+                <li>Документация местами неясная</li>
+              </ul>
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>Недостает поддержки клиентов для Windows</li>
+                <li>
+                  Веб-интерфейс автоматически не связывается с существующей
+                  установкой Ansible; данные должны быть импортированы
+                </li>
+              </ul>
+              <br />
+            </td>
+            <td>
+              <ul>
+                <li>
+                  Веб-интерфейс не такой зрелый и полный как у конкурентов
+                </li>
+                <li>Не хватает инструментов для детальных отчетов</li>
+              </ul>
+              <br />
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Цены</strong><br /></td>
+            <td>
+              Бесплатная версия с открытым исходным текстом; Puppet Enterprise
+              стоит $100 за компьютер в год<br />
+            </td>
+            <td>
+              Бесплатная версия с открытым исходным кодом; Enterprise Chef
+              бесплатен для 5 компьютеров, $120 в месяц для 20 компьютеров, $300
+              в месяц для 50 компьютеров, $600 в месяц для 100 и так далее<br />
+            </td>
+            <td>
+              Бесплатная версия с открытым исходным кодом; AWX бесплатен для 10
+              компьютеров, далее $100 или $250 за компьютер в год, в зависимости
+              от поддержки<br />
+            </td>
+            <td>
+              Бесплатная версия с открытым исходным кодом; SaltStack Enterprise
+              стоит $150 за узел в год, со скидками в зависмости от количества и
+              корпоративными лицензиями<br />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide" id="pushpull">
+      <h2>Push and Pull модели</h2>
+      <p class="next">Не, не гит:)</p>
+      <p class="next">Но очень похоже</p>
+    </section>
+
+    <section class="slide" id="pull">
+      <style>
+        #push .image {
+          width: 350px;
+          margin-right: 20px;
+          margin-bottom: 20px;
+        }
+      </style>
+      <h2>Pull модель</h2>
+      <p class="next">Наши клиенты сами получают данные от мастер ноды</p>
+      <img
+        src="pictures/puppet-pull.jpeg"
+        class="image next place right bottom"
+      />
+      <p class="next">
+        CMS в которых это реализовано - CFEngine, Puppet. Поддерживают - Salt
+        Stack, Chef
+      </p>
+    </section>
+
+    <section class="slide" id="push">
+      <style>
+        #pull .image {
+          width: 350px;
+          margin-right: 20px;
+          margin-bottom: 20px;
+        }
+      </style>
+      <h2>Push модель</h2>
+      <p class="next">
+        Мы сами/наша мастер нода говорит клиентам что и как делать
+      </p>
+      <img
+        src="pictures/ansible-model.jpeg"
+        class="image next place right bottom"
+      />
+      <p class="next">
+        CMS в которых это реализовано - Ansible. Поддерживают - Salt Stack, Chef
+      </p>
+    </section>
+
+    <section class="slide" id="hard-push-pull">
+      <h2 class="centered">на самом деле всё сложнее...</h2>
+    </section>
+
+    <section class="slide" id="hard-push-pull">
+      <img src="pictures/cm-architecture.png" class="cover h" />
+    </section>
+
+    <section class="slide" id="ansible">
+      <h2>Мы выбираем..</h2>
+      <p>Ansible!</p>
+      <ul class="next">
+      <li>Декларативная модель</li>
+      <li>Push-подход. Нам достаточно машин, которые доступны нам по ssh</li>
+      </ul>
+    </section>
+
+    <section class="slide" id="ansible-example">
+    <style>
+      #ansible-example .code {
+        font-size: 10px;
+      }
+      #ansible-example .double {
+        display: flex;
+        justify-content: space-around;
+      }
+    </style>
+      <p>Пример ansible конфигурации</p>
+      <div class="double">
+      <pre class="code">
+      <code>- hosts: all</code>
+      <code>  become: yes</code>
+      <code>  tasks:</code>
+      <code>    - name: Install required system packages</code>
+      <code>      apt: name={{ item }} state=latest update_cache=yes</code>
+      <code>      loop: ['apt-transport-https', 'ca-certificates', 'curl']</code>
+      <code>    - name: Add Docker GPG apt Key</code>
+      <code>      apt_key:</code>
+      <code>        url: https://download.docker.com/linux/ubuntu/gpg</code>
+      <code>        state: present</code>
+      <code>    - name: Add Docker Repository</code>
+      <code>      apt_repository:</code>
+      <code>        repo: deb https://download.docker.com/linux/ubuntu bionic stable</code>
+      <code>        state: present</code>
+      <code>    - name: Update apt and install docker-ce</code>
+      <code>      apt: update_cache=yes name=docker-ce state=latest</code>
+      </pre>
+      <pre class="code">
+      <code>    - name: Setting every day docker prune</code>
+      <code>      cron:</code>
+      <code>        name: Docker prune</code>
+      <code>        hour: 0</code>
+      <code>        minute: 0</code>
+      <code>        job: docker system prune -a -f</code>
+      <code>    - name: Setup docker logs rotation</code>
+      <code>      copy:</code>
+      <code>        src: ./docker/daemon.json</code>
+      <code>        dest: /etc/docker/daemon.json</code>
+      <code>    - name: Install pip deps</code>
+      <code>      pip: "name={{ item }}"</code>
+      <code>      loop: ['requests', 'docker']</code>
+      <code>    - name: Add gitlab runner</code>
+      <code>      docker_container:</code>
+      <code>        image: gitlab/gitlab-runner:latest</code>
+      <code>        name: gitlab-runner</code>
+      <code>        volumes:</code>
+      <code>          - /srv/gitlab-runner/config:/etc/gitlab-runner</code>
+        <code>        - /var/run/docker.sock:/var/run/docker.sock</code>
+
+      </pre>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2 class="centered">Что еще нам нужно?</h2>
+    </section>
+
+    <section class="slide">
+      <p>
+        Мы умеем настраивать машины, настраивать много машин, настраивать
+        автоматически
+      </p>
+      <p class="next">Но нам нужно их как-то запустить..</p>
+    </section>
+
+    <section class="slide">
+      <h2>Инструменты для управления инфраструктурой</h2>
+      <ul class="next">
+        <li>Cloud Formation</li>
+        <li>Pulumi</li>
+        <li>Terraform</li>
+        <li class="next">etc...</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h2>Зачем? Если есть rest-api/cli/sdk..</h2>
+      <ul>
+        <li class="next">Декларативность</li>
+        <li class="next">Наглядность</li>
+        <li class="next">Cross-provider(Не всегда)</li>
+        <li class="next">Да и просто классно, удобно, здорово</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h2>Terraform ❤</h2>
+      <p>Детище HashiCorp</p>
+      <p class="next">Огромное количество провайдеров</p>
+      <p class="next">
+        Множество фишек которые вы можете использовать для написания
+        удобночитаемых и поддерживаемых конфигураций
+      </p>
+      <p class="next">
+        Свой, очень приятный DSL который используется почти во всех продуктах
+        HashiCorp
+      </p>
+    </section>
+
+    <section class="slide">
+      <h2>А еще</h2>
+      <p>Мы всё ближе и ближе к нашей конечной цели</p>
+      <p class="name">
+        Теперь файлы конфигураций мы можем хранить в Git-репозитории
+      </p>
+      <p class="name">Таким образом мы достигаем воспроизводимости</p>
+      <p class="name">
+        Можем восстановить нашу инфраструктуру на любой момент времени
+      </p>
+    </section>
+
+    <section class="slide" id="terraform-example">
+      <style>
+        #terraform-example .code {
+          font-size: 9px;
+        }
+        #terraform-example .double {
+          display: flex;
+          justify-content: space-around;
+        }
+      </style>
+      <p>Этого достаточно для настройки простых секьюрити групп</p>
+      <div class="double">
+      <pre class="code">
+        <code>resource "aws_default_vpc" "default" {</code>
+        <code>  tags = {</code>
+        <code>    Name = "Default VPC"</code>
+        <code>  }</code>
+        <code>}</code>
+        <code>resource "aws_security_group" "allow_ssh_and_app" {</code>
+        <code>  name        = "allow_ssh_and_app"</code>
+        <code>  description = "Allow ssh and app trafic"</code>
+        <code>  vpc_id      = aws_default_vpc.default.id</code>
+        <code>  ingress {</code>
+        <code>    description = "TLS from VPC"</code>
+        <code>    from_port   = 3002</code>
+        <code>    to_port     = 3002</code>
+        <code>    protocol    = "tcp"</code>
+        <code>    cidr_blocks = ["0.0.0.0/0"]</code>
+        <code>  }</code>
+        </pre>
+        <pre class="code">
+        <code>  ingress {</code>
+        <code>    description = "TLS from VPC"</code>
+        <code>    from_port   = 22</code>
+        <code>    to_port     = 22</code>
+        <code>    protocol    = "tcp"</code>
+        <code>    cidr_blocks = ["0.0.0.0/0"]</code>
+        <code>  }</code>
+        <code>  egress {</code>
+        <code>    from_port   = 0</code>
+        <code>    to_port     = 0</code>
+        <code>    protocol    = "-1"</code>
+        <code>    cidr_blocks = ["0.0.0.0/0"]</code>
+        <code>  }</code>
+        <code>  tags = {</code>
+        <code>    Name = "allow_ssh_and_app"</code>
+        <code>  }</code>
+        <code>}</code>
+      </pre>
+      </div>
+    </section>
+
+    <section class="slide" id="terraform-example2">
+          <style>
+            #terraform-example2 .code {
+              font-size: 14px;
+            }
+          </style>
+          <p>А этого для запуска спотовых инстансев</p>
+          <pre class="code">
+        <code>resource "aws_spot_instance_request" "worker_instance" {</code>
+        <code>    ami           = var.ami</code>
+        <code>    instance_type = "c5.xlarge"</code>
+        <code>    wait_for_fulfillment = true</code>
+        <code>    vpc_security_group_ids=[var.security_group]</code>
+        <code>    tags = {</code>
+        <code>      Name = "Load Test Worker ${var.index}"</code>
+        <code>    }</code>
+        <code>  }</code>
+    </section>
+
+    <section class="slide" id="immutability">
+      <h2 class="centered">Воспроизводимость есть, а иммутабельность где?</h2>
+    </section>
+
+    <section class="slide" id="immutability">
+      <style>
+        #immutability .image {
+          width: 200px;
+          margin: 30px;
+        }
+      </style>
+      <h2>Packer</h2>
+      <p class="next">И опять HashiCorp...</p>
+      <img  src="pictures/packer-logo.png" class="next image place right bottom"/>
+      <p class="next">Собираем "бессмертные" образы для наших машин</p>
+      <p class="next">Наиболее простой из всех перечисленных ранее инструментов</p>
+    </section>
+
+    <section class="slide" id="packer-principles">
+      <h2>Как это работает?</h2>
+      <ol>
+        <li class="next">Описываем базовый образ и конфиг для него одним из существующих провайдеров</li>
+        <li class="next">Отдаём конфиг packer-у</li>
+        <li class="next">Packer возвращает нам айди образа виртуальной машины, который мы можем использовать например в terraform</li>
+        <li class="next"><strong>Не забываем выключить машину сборщик в случае краша Packer</strong></li>
+      </ol>
+    </section>
+
+    <section class="slide" id="packer-config-example">
+      <style>
+        #packer-config-example .code {
+          font-size: 9px;
+        }
+
+        #packer-config-example .double {
+            display: flex;
+            justify-content: space-around;
+        }
+      </style>
+      <p>Пример конфигурации</p>
+      <div class="double">
+      <pre class="code">
+      <code>{</code>
+      <code>  "variables": {</code>
+      <code>    "aws_access_key": "{{ env `AWS_ACCESS_KEY` }}",</code>
+      <code>    "aws_secret_key": "{{ env `AWS_SECRET_KEY` }}",</code>
+      <code>    "loki_endpoint": "{{ env `LOKI_ENDPOINT` }}",</code>
+      <code>    "loki_username": "{{env `LOKI_USERNAME`}}",</code>
+      <code>    "loki_password": "{{env `LOKI_PASSWORD`}}",</code>
+      <code>    "environment": "{{env `ENVIRONMENT`}}"</code>
+      <code>  },</code>
+      </pre>
+      <pre class="code">
+      <code>  "builders": [{</code>
+      <code>      "type": "amazon-ebs",</code>
+      <code>      "access_key": "{{user `aws_access_key`}}",</code>
+      <code>      "secret_key": "{{user `aws_secret_key`}}",</code>
+      <code>      "region": "us-east-1",</code>
+      <code>      "source_ami_filter": {</code>
+      <code>        "filters": {"image-id": "ami-04064d2593eb9eb93"},</code>
+      <code>        "owners": ["self"],</code>
+      <code>        "most_recent": true</code>},</code>
+      <code>      "instance_type": "c5.large",</code>
+      <code>      "ssh_username": "ubuntu",</code>
+      <code>      "ami_name": "packer {{timestamp}}"}],</code>
+      <code>  "provisioners": [{</code>
+      <code>      "type": "ansible",</code>
+      <code>      "user": "ubuntu",</code>
+      <code>      "playbook_file": "./playbook.yml",</code>
+      <code>      "ansible_env_vars": [</code>
+      <code>        "LOKI_ENDPOINT={{ user `loki_endpoint` }}",</code>
+      <code>        "LOKI_USERNAME={{ user `loki_username`}}",</code>
+      <code>        "LOKI_PASSWORD={{ user `loki_password` }}",</code>
+      <code>        "ENVIRONMENT={{ user `environment` }}"</code>
+      <code>      ]}]}</code>
+      </pre>
+      </div>
+    </section>
+
+    <section class="slide" id="steps-to-reproduce">
+      <h2>Получаем полный комплект</h2>
+        <p class="next">Описываем желаемое состоние машины/нескольких машин с помощью ansible</p>
+        <p class="next">Делаем snapshot машины с желаемым состоянием с помощью packer</p>
+        <p class="next">Поднимаем нашу инфраструктуру с нужным состоянием в помощью terraform</p>
+        <p class="next"><strong>Profit!</strong></p>
+    </section>
+
+    <section class="slide" id="standart-examples">
+      <h2>Стандартный пример использования</h2>
+      <p>Поднимаем инфраструктуру в облаке</p>
+      <p>Управляем серверами централизовано</p>
+      <p>Имеем типовое и предсказуемое поведение машин</p>
+    </section>
+
+    <section class="slide" id="non-standart-examples">
+      <h2><strong>НЕ</strong>Стандартный пример использования</h2>
+      <p>Конфигурируем виртуальные машины для ботов</p>
+      <p>Разворачиваем машины с помощью terraform</p>
+      <p>Проводим нагрузочное тестирование</p>
+      <p>Убиваем машины после проведения тестов</p>
+    </section>
+
+    <section class="slide" id="total1">
+      <h2>Выводы. Зачем нам всё это?</h2>
+      <ul>
+        <li class="next">Предсказуемая инфраструктура</li>
+        <li class="next">Легко можем управлять каким-угодно большим парком машин</li>
+        <li class="next">Можем управлять инфраструктурой как любым другим кодом, возваращать в нужное состояние по необходимости</li>
+        <li class="next">Декларативно решаем сложный вопрос управления огромным количеством конфигураций</li>
+      </ul>
+    </section>
+    <section class="slide" id="total2">
+      <h2>Выводы. Почему нам может это не подойти прямо сейчас?</h2>
+      <ul>
+        <li class="next">Нам нужен быстрый прототип приложения.</li>
+        <li class="next">Количество машин в нашей инфраструктуре <= 1</li>
+        <li class="next">Мы имеем огромную инфраструктуру, которая описана любым другим подходом кроме IaC</li>
+      </ul>
+    </section>
+
+    <section class="slide" id="questions">
+      <h2 class="centered">QUESTIONS?</h2>
+    </section>
+
+    <style>
+      h2.centered {
+        margin-top: 20%;
+        text-align: center;
+      }
+    </style>
+    <div class="progress"></div>
+
+    <script src="node_modules/@shower/core/dist/shower.js"></script>
+    <!-- Copyright © 2021 Yours Truly, Famous Inc. -->
+  </body>
+</html>
